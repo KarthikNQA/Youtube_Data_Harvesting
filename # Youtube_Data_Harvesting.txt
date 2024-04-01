@@ -1,0 +1,202 @@
+# Youtube_Data_Harvesting
+from googleapiclient.discovery import build
+
+#Youtube_API
+
+def Api_connect():
+    api="AIzaSyDAXP3Lf7N_2Poes8WIc9if-qAdOVtNVCs"
+    api_service_name = "youtube"
+    api_version = "v3"
+
+    youtube=build(api_service_name,api_version,developerKey=api)
+
+    return youtube
+
+youtube=Api_connect()
+
+
+# Channel_Info
+def get_channel_info(channel_id):
+    request=youtube.channels().list(
+                    part="snippet,ContentDetails,statistics",
+                    id=channel_id
+    )
+    response=request.execute()
+
+    for i in response['items']:
+        data=dict(Channel_Name=i["snippet"]["title"],
+                Channel_Id=i["id"],
+                Subscribers=i['statistics']['subscriberCount'],
+                Views=i["statistics"]["viewCount"],
+                Total_Videos=i["statistics"]["videoCount"],
+                Channel_Description=i["snippet"]["description"],
+                Playlist_Id=i["contentDetails"]["relatedPlaylists"]["uploads"])
+    return data
+
+channel_info=get_channel_info('Channel-ID')
+
+channel_info
+
+
+#10_youtube_video_channel_id
+# creating a list-video_ids
+def get_videos_ids(channel_id):
+    video_ids=[]
+    response=youtube.channels().list(id=channel_id,
+                                    part='contentDetails').execute()
+    Playlist_Id=response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+
+    next_page_token=None
+
+    while True:
+        response1=youtube.playlistItems().list(
+                                            part='snippet',
+                                            playlistId=Playlist_Id,
+                                            maxResults=50,
+                                            pageToken=next_page_token).execute()
+        for i in range(len(response1['items'])):
+            video_ids.append(response1['items'][i]['snippet']['resourceId']['videoId'])
+        next_page_token=response1.get('nextPageToken')
+
+        if next_page_token is None:
+            break
+    return video_ids
+    
+video_ids=get_videos_ids('video_ID')
+
+video_ids
+
+
+#Video_Infos
+def get_video_info(Video_ids):
+    video_data=[]#all the video details will be put through loop our needed data is inside this list
+    for video_id in Video_ids:
+        request=youtube.videos().list(
+            part='snippet,contentDetails,statistics',
+            id=video_id
+        )
+    response=request.execute()
+    # here we are slicing things to get requirements
+    for item in response['items']:
+        data=dict(Channel_Name=item['snippet']['channelTitle'],
+                channel_id=item["snippet"]['channelId'],
+                Video_id=item['id'],
+                Title=item['snippet']['title'],
+                Tags=item['snippet']['title'],
+                Thumnails=item['snippet']['thumbnails'],
+                Description=item.get('description'),
+                Publish_date=item['snippet']['publishedAt'],
+                Duration=item['contentDetails']['duration'],
+                Views=item['statistics']['viewCount'],
+                Comments=item['statistics']['commentCount'],
+                Likes=item['statistics']['likeCount'],
+                Fav=item['statistics']['favoriteCount'],
+                        Definition=item['contentDetails']['definition'],
+                Caption=item['contentDetails']['caption']
+                )
+        video_data.append(data)
+    return video_data   
+
+video_ids=get_videos_ids('Video-ids')
+
+video_ids
+
+
+#Video_Infos
+def get_video_info(Video_ids):
+    video_data=[]#all the video details will be put through loop our needed data is inside this list
+    for video_id in Video_ids:
+        request=youtube.videos().list(
+            part='snippet,contentDetails,statistics',
+            id=video_id
+        )
+    response=request.execute()
+    # here we are slicing things to get requirements
+    for item in response['items']:
+        data=dict(Channel_Name=item['snippet']['channelTitle'],
+                channel_id=item["snippet"]['channelId'],
+                Video_id=item['id'],
+                Title=item['snippet']['title'],
+                Tags=item['snippet']['title'],
+                Thumnails=item['snippet']['thumbnails'],
+                Description=item.get('description'),
+                Publish_date=item['snippet']['publishedAt'],
+                Duration=item['contentDetails']['duration'],
+                Views=item['statistics']['viewCount'],
+                Comments=item['statistics']['commentCount'],
+                Likes=item['statistics']['likeCount'],
+                Fav=item['statistics']['favoriteCount'],
+                        Definition=item['contentDetails']['definition'],
+                Caption=item['contentDetails']['caption']
+                )
+        video_data.append(data)
+    return video_data   
+
+video_info=get_video_info('Particular-video-id')
+
+video_info
+
+
+# getting comments
+def get_comment_info(video_ids):
+    Comment_info=[]
+    try:
+        for video_id in video_ids:
+            request=youtube.commentThreads().list(
+                part='snippet',
+                videoId=video_id,
+                maxResults=50
+            )
+            response=request.execute()
+
+            for item in response['items']:
+                data=dict(Comment_Id=item['snippet']['topLevelComment']['id'],
+                        video_Id=item['snippet']['topLevelComment']['snippet']['videoId'],
+                        Comment_Display=item['snippet']['topLevelComment']['snippet']['textDisplay'],
+                        Comment_author_Name=item['snippet']['topLevelComment']['snippet']['authorDisplayName'],
+                        Comment_date=item['snippet']['topLevelComment']['snippet']['publishedAt'])
+
+                Comment_info.append(data)  #appending into empty list
+
+    except:
+    #by  giviing pass if th comment for video got any errors means it would pass or eventually skip we have to return function
+        pass
+    return Comment_info
+
+comment_info=get_comment_info('Comment-info')
+
+comment_info
+
+
+#  Collecting playlist id
+
+def get_playlist_details(channel_id):
+        next_page_token=None
+        All_data=[]
+        while True:
+                request=youtube.playlists().list(
+                        part='snippet,contentDetails',
+                        channelId=channel_id,
+                        maxResults=50,
+                        pageToken=next_page_token
+                )
+                response=request.execute()
+
+                for item in response['items']:
+                        data=dict(Playlist_Id=item['id'],
+                                Title=item['snippet']['title'],
+                                Channel_Id=item['snippet']['channelId'],
+                                Channel_Name=item['snippet']['channelTitle'],
+                                PublishedAt=item['snippet']['publishedAt'],
+                                Video_Count=item['contentDetails']['itemCount'])
+                        All_data.append(data)
+
+                next_page_token=response.get('nextPageToken')
+                if next_page_token is None:
+                        break
+        return All_data
+
+playlist_details=get_playlist_details('Playlist-ID')
+
+playlist_details
+    
