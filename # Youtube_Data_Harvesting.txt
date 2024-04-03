@@ -241,3 +241,54 @@ finally:
     cursor.close()
     connection.close()
     print("Cursor and connection closed")
+
+import MySQLdb
+
+# Establish connection to MySQL database
+connection = MySQLdb.connect(
+    host="localhost",
+    user="root",
+    passwd="Karthik@16",
+    db="my_database"
+)
+
+# Create a cursor
+cursor = connection.cursor()
+
+try:
+    # Execute the GRANT statement
+    cursor.execute("GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION")
+    cursor.execute("FLUSH PRIVILEGES")
+    connection.commit()
+    print("Privileges granted successfully!")
+
+except MySQLdb.Error as e:
+    print("Error granting privileges:", e)
+
+finally:
+    # Close connection
+    cursor.close()
+    connection.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
