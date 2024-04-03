@@ -1,5 +1,9 @@
 # Youtube_Data_Harvesting
 from googleapiclient.discovery import build
+import mysql.connector
+import MySQLdb
+import pandas as pd
+
 
 #Youtube_API
 
@@ -200,3 +204,40 @@ playlist_details=get_playlist_details('Playlist-ID')
 
 playlist_details
     
+
+# Establish connection to MySQL database
+connection = MySQLdb.connect(
+    host="localhost",
+    user="root",
+    passwd="Karthik@16",
+    db="my_database"  # Specify your database name here
+)
+
+# Create a cursor
+cursor = connection.cursor()
+
+try:
+    create_query = '''CREATE TABLE IF NOT EXISTS channels (
+                        Channel_Name VARCHAR(250),
+                        Channel_Id VARCHAR(100) PRIMARY KEY,
+                        Subscribers BIGINT,
+                        Views BIGINT,
+                        Total_Videos INT,
+                        Channel_Description TEXT,
+                        Playlist_Id VARCHAR(100)
+                     )'''
+
+    # Execute the CREATE TABLE query
+    cursor.execute(create_query)
+
+    # Commit the changes to the database
+    connection.commit()
+
+except MySQLdb.Error as e:
+    print("Error creating channels table:", e)
+
+finally:
+    # Close cursor and connection
+    cursor.close()
+    connection.close()
+    print("Cursor and connection closed")
